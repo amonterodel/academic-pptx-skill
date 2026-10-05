@@ -62,6 +62,32 @@ Origen vectorial: función `parrot()` en `examples/sefh-71-ia-tdm/build_assets.p
 - Gafas, estetoscopio u otros accesorios fuera de esta ficha.
 - Sombras proyectadas en el suelo.
 
+## Hoja de personaje generada
+
+![Hoja de personaje del loro estocástico](loro-estocastico-hoja.png)
+
+`loro-estocastico-hoja.png`: hoja de 1536 × 1024 generada con ChatGPT Images 2 a partir del prompt de abajo. Sirve como **referencia de concepto**. Manda esta ficha cuando la imagen no coincida con ella.
+
+Desviaciones conocidas:
+
+| Rasgo | Ficha | Hoja generada | Peso |
+|---|---|---|---|
+| Alas en las expresiones «seguro» y «hablando» | Tres plumas metálicas | Mano humana con índice y pulgar | Alto: contradice la regla de no dar rasgos humanos |
+| Cresta | Tres placas | Cuatro o cinco, y no siempre las mismas | Medio |
+| Ceja en «seguro de sí mismo» | Placa oscura levantada | No aparece; solo el párpado | Medio |
+| Dedos de las alas en las vistas | Tres plumas | Cuatro | Bajo |
+| Botones | Dos | Tres | Bajo |
+| Pies | Dos dedos adelante y uno atrás | Tres adelante en la vista de frente | Bajo |
+| Estilo | Contorno grueso y relleno liso | Contorno más fino y sombreado suave | Bajo; se nota junto a los dibujos vectoriales de la ponencia |
+
+Coincide con la ficha:
+
+- La paleta, con sus códigos hexadecimales correctos.
+- La tarjeta turquesa a la izquierda de quien mira y el bolsillo con bolígrafo morado a la derecha.
+- Los anillos del cuello, los tornillos del hombro y la rodilla, y los remaches de la nuca.
+- El ojo cian con halo.
+- Los rótulos, sin erratas.
+
 ## Prompt para generar la hoja de personaje (ChatGPT Images 2)
 
 ```
