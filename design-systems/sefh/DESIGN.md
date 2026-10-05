@@ -312,7 +312,7 @@ El marco discontinuo está reservado al «arnés» (protocolo o procedimiento) q
 
 **Ilustración.** Estilo plano con contorno de tinta de grosor constante (5 px a 120 px de alto) y rellenos lisos de la paleta `illus-*`. Personajes recurrentes:
 
-- **El loro robótico.** Cuerpo metálico, articulaciones atornilladas, luz cian en el ojo y bata blanca. Es el modelo de lenguaje y, en un esquema, el nodo más grande (unas 1,5 veces los demás).
+- **El loro robótico.** Cuerpo metálico, articulaciones atornilladas, luz cian en el ojo y bata blanca. Es el modelo de lenguaje y, en un esquema, el nodo más grande (unas 1,5 veces los demás). Su ficha canónica, con el prompt para generar la hoja de personaje, está en `personajes/loro-estocastico.md`.
 - **El farmacéutico con pluma.** Busto con bata. Es el criterio humano y va siempre por encima del esquema que supervisa.
 
 Los iconos son de línea con la misma tinta y, como mucho, un relleno de tinte semántico. Cada uno tiene tres variantes: color, gris (atenuado) y radiografía. Sin logotipos ni marcas reales.
