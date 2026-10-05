@@ -12,32 +12,41 @@ Uso:  python3 build_assets.py   (escribe los PNG en ./assets)
 """
 
 import math
+import sys
 from pathlib import Path
 
 import cairosvg
-from PIL import Image
+from PIL import Image, ImageFilter
 
-OUT_DIR = Path(__file__).parent / "assets"
+HERE = Path(__file__).parent
+OUT_DIR = HERE / "assets"
+sys.path.insert(0, str(HERE.parents[1] / "design-systems" / "sefh"))
+from sefh_tokens import load  # noqa: E402
 
-# Colores de la plantilla
-LIMA = "#C3BF24"
-VERDE = "#5BB46C"
-TURQUESA = "#00B3B2"
-MORADO = "#AD3B94"
-AZUL = "#4A73A0"
-INK = "#263445"
+T = load()
+IL = {k: "#" + v for k, v in T.palette("illus-").items()}
+
+
+def _c(name):
+    return "#" + T.color(name)
+
+
+LIMA, VERDE, TURQUESA, MORADO, AZUL = (_c(n) for n in ("structure", "tool", "emphasis", "ml",
+                                                         "human"))
+INK = IL["ink"]
 
 PALETTES = {
     "color": {
         "out": INK, "op": 1.0,
-        "m1": "#E4E9EE", "m2": "#B9C3CD", "m3": "#8794A1", "m4": "#4E5B68",
-        "coat": "#FFFFFF", "coatS": "#E3EAF0",
+        "m1": IL["metal-1"], "m2": IL["metal-2"], "m3": IL["metal-3"], "m4": IL["metal-4"],
+        "coat": IL["coat"], "coatS": IL["coat-shade"],
         "beak": "#46525F", "beakS": "#6C7884",
-        "sock": "#1C2833", "glow": "#5FF0EE", "core": "#FFFFFF",
+        "sock": "#1C2833", "glow": IL["glow"], "core": "#FFFFFF",
         "accent": MORADO, "paper": "#FFFFFF", "line": "#9AA6B2",
-        "verde": VERDE, "verdeT": "#DDF0E0", "morado": MORADO, "moradoT": "#F1DDEB",
-        "azul": AZUL, "azulT": "#DCE6F1", "turq": TURQUESA, "turqT": "#D6F2F2",
-        "lima": LIMA, "limaT": "#F1F0C9", "skin": "#E3B48C", "hair": "#3B3F4A",
+        "verde": VERDE, "verdeT": _c("tool-tint"), "morado": MORADO, "moradoT": _c("ml-tint"),
+        "moradoS": _c("ml-soft"), "moradoM": _c("ml-mid"),
+        "azul": AZUL, "azulT": _c("human-tint"), "turq": TURQUESA, "turqT": _c("emphasis-tint"),
+        "lima": LIMA, "limaT": _c("structure-tint"), "skin": IL["skin"], "hair": "#3B3F4A",
         "shirt": TURQUESA, "plasma": "#E9D86A",
     },
     "gray": {
@@ -48,13 +57,14 @@ PALETTES = {
         "sock": "#C9D0D6", "glow": "#EEF1F4", "core": "#FFFFFF",
         "accent": "#D5DADF", "paper": "#FFFFFF", "line": "#D0D6DC",
         "verde": "#C9D0D6", "verdeT": "#F1F3F5", "morado": "#C9D0D6", "moradoT": "#F1F3F5",
+        "moradoS": "#E3E7EB", "moradoM": "#D3D9DE",
         "azul": "#C9D0D6", "azulT": "#F1F3F5", "turq": "#C9D0D6", "turqT": "#F1F3F5",
         "lima": "#C9D0D6", "limaT": "#F1F3F5", "skin": "#ECEFF2", "hair": "#D3D9DE",
         "shirt": "#E3E7EB", "plasma": "#E9ECEF",
     },
 }
 # Radiografía: todo el dibujo en líneas claras; rellenos casi transparentes.
-_X = "#A9DBFF"
+_X = _c("xray-line")
 PALETTES["xray"] = {k: _X for k in PALETTES["color"]}
 PALETTES["xray"].update({"op": 0.10, "out": _X, "glow": "#E8FBFF", "core": "#FFFFFF",
                           "sock": "#0B1626"})
@@ -139,8 +149,11 @@ def parrot(pal="color", pose="neutral"):
     W, H = 440, 620
 
     # Cola (detrás)
-    pen.path("M150,392 L96,520 L122,530 L176,400 Z", "m3")
-    pen.path("M168,396 L128,540 L156,546 L194,404 Z", "m2")
+    pen.path("M150,396 C126,440 104,486 92,528 C104,522 116,512 124,500 C140,470 160,434 178,404 Z",
+             "m3")
+    pen.path("M170,398 C158,448 146,500 142,548 C154,538 164,524 170,508 C180,474 190,438 198,406 Z",
+             "m2")
+    pen.path("M106,494 L126,484 M118,468 L138,458 M150,500 L170,494 M156,470 L176,464", w=3)
 
     # Patas: varillas con rodilla atornillada
     for x in (196, 240):
@@ -225,8 +238,9 @@ def parrot(pal="color", pose="neutral"):
     pen.circle(250, 134, 10, "glow", w=0)
     pen.circle(250, 134, 4.5, "core", w=0)
     if pose == "confident":
-        # Párpado a media asta: gesto de suficiencia
+        # Párpado a media asta y ceja levantada: gesto de suficiencia
         pen.path("M229,136 A21,21 0 0 1 271,136 Z", "m2")
+        pen.path("M222,100 L276,84 L280,96 L226,112 Z", "m4")
     pen.end()
 
     return pen.svg(W, H, vb="0 -36 440 620")
@@ -377,8 +391,8 @@ def icon_dos_columnas(pal="color"):
     pen = Pen(pal, 4.5)
     for i in range(3):
         pen.rect(8, 16 + i * 32, 44, 24, rx=5, fill="azulT")
-    pen.circle(86, 60, 30, "lima", w=4)
-    pen.circle(86, 60, 20, "turq", w=4)
+    pen.circle(86, 60, 30, "moradoS", w=4)
+    pen.circle(86, 60, 20, "moradoM", w=4)
     pen.circle(86, 60, 10, "morado", w=4)
     return pen.svg(120, 120)
 
@@ -405,8 +419,24 @@ def render(name, svg, width):
     im = Image.open(out)
     x0, y0, x1, y1 = im.getbbox()
     pad = int(0.02 * max(im.size))
-    im.crop((max(0, x0 - pad), max(0, y0 - pad),
-             min(im.width, x1 + pad), min(im.height, y1 + pad))).save(out)
+    im = im.crop((max(0, x0 - pad), max(0, y0 - pad),
+                  min(im.width, x1 + pad), min(im.height, y1 + pad)))
+    if name.endswith("-xray"):
+        im = _glow(im)
+    im.save(out)
+
+
+def _glow(im):
+    """Halo cian suave detrás de las líneas: aspecto de placa iluminada."""
+    im = im.convert("RGBA")
+    r = max(6, im.width // 60)
+    canvas = Image.new("RGBA", (im.width + 4 * r, im.height + 4 * r), (0, 0, 0, 0))
+    canvas.paste(im, (2 * r, 2 * r), im)
+    alpha = canvas.split()[3].filter(ImageFilter.GaussianBlur(r))
+    halo = Image.new("RGBA", canvas.size, (120, 210, 255, 0))
+    halo.putalpha(alpha.point(lambda a: int(a * 0.55)))
+    halo.alpha_composite(canvas)
+    return halo
 
 
 def main():
