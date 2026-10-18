@@ -449,6 +449,142 @@ def slide_cover(s):
            200, 752, 1520, 110)
 
 
+def _cell_border(cell, sides, color, width_pt):
+    """Bordes de una celda de tabla nativa (a:lnL/R/T/B antes del relleno)."""
+    tcPr = cell._tc.get_or_add_tcPr()
+    order = ["lnL", "lnR", "lnT", "lnB"]
+    for side in order:
+        old = tcPr.find(qn(f"a:{side}"))
+        if old is not None and side in sides:
+            tcPr.remove(old)
+    pos = 0
+    for side in order:
+        if side not in sides:
+            if tcPr.find(qn(f"a:{side}")) is not None:
+                pos += 1
+            continue
+        ln = etree.Element(qn(f"a:{side}"), w=str(int(Pt(width_pt))), cap="flat", cmpd="sng",
+                           algn="ctr")
+        sf = etree.SubElement(ln, qn("a:solidFill"))
+        etree.SubElement(sf, qn("a:srgbClr")).set("val", color)
+        etree.SubElement(ln, qn("a:prstDash")).set("val", "solid")
+        tcPr.insert(pos, ln)
+        pos += 1
+
+
+def _cell_text(cell, runs, size=16, color=INK, bold=False, align="l"):
+    tf = cell.text_frame
+    tf.word_wrap = True
+    for p_ in list(tf.paragraphs)[1:]:
+        p_._p.getparent().remove(p_._p)
+    p = tf.paragraphs[0]
+    for r in list(p.runs):
+        r._r.getparent().remove(r._r)
+    p.alignment = {"l": PP_ALIGN.LEFT, "c": PP_ALIGN.CENTER}[align]
+    for run in runs:
+        txt, o = (run, {}) if isinstance(run, str) else run
+        _add_run(p, txt, o, size, color, bold, False)
+    cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+    cell.margin_left = cell.margin_right = px(6)
+    cell.margin_top = cell.margin_bottom = px(4)
+
+
+def slide_case(s):
+    """Diapositiva 2: el mismo caso preguntado a tres IA, tres veces cada una."""
+    headline(s, "Misma pregunta, misma dosis… decisiones distintas.")
+    notes(s, "Pregunta a mano alzada. La dosis coincidió en todas; cambiaron el AUC, la decisión "
+             "sobre la dosis de las 20:00, la siguiente extracción y la fuente. Nueve consultas no "
+             "son un estudio: ¿me pasa solo a mí? → diapositiva siguiente.")
+    top = 280
+    bottom = top + 86 * 3 + 48 * 7                  # mismo alto que la tabla
+    # Columna izquierda (1/3): el caso
+    cx, cw = cols(1, 4)
+    card(s, cx, top, cw, bottom - top, name="Tarjeta caso")
+    sub = {"sub": True}
+    text(s, cx + PAD, top + PAD, cw - 2 * PAD, bottom - top - 2 * PAD - 40, [
+        {"runs": [("El caso", {"bold": True, "size": 24})], "after": 6},
+        {"runs": [f"Varón, 68{NB}años, 82{NB}kg · bacteriemia por SARM"], "after": 6},
+        {"runs": [f"Creatinina 1,2{NB}mg/dL estable"], "after": 6},
+        {"runs": [f"1000{NB}mg/12{NB}h · pico 34,0 y valle 21,2{NB}mg/L"], "after": 6},
+        {"runs": [("Respuesta de referencia: ", {"bold": True, "color": TOOL_D}),
+                  "AUC", ("24", sub), f" actual ≈{NB}667 → 750{NB}mg/12{NB}h (AUC", ("24", sub),
+                  f" ≈{NB}500)"]},
+    ], size=20, color=INK, spacing=0.95, name="Texto caso")
+    text(s, cx + PAD, bottom - PAD - 30, cw - 2 * PAD, 30, "3 IA × 3 chats nuevos · mismo texto",
+         size=16, italic=True, color=GRAY, name="Nota caso")
+
+    # Columna derecha (2/3): tabla nativa
+    tx, tw = cols(5, 12)
+    widths = [140, 112, 190, 200, 215, 308]
+    header = [["IA"], ["Prueba"], ["AUC", ("24", sub), " actual (ref. 667)"],
+              ["Dosis de las 20:00"], ["Siguiente extracción"], ["Fuente citada"]]
+    P = "[pendiente]"
+    rows = [
+        ("Gemini", "1", ("697", "fail"), ("Darla (750 mg)", "ok"), ("A las 48-72 h", "ok"),
+         ("Una guía, como si fuera un modelo", "fail")),
+        ("Gemini", "2", ("662", "ok"), ("Omitirla", "partial"), ("Día 5, 20:00", "partial"),
+         ("Ecuación mal aplicada", "fail")),
+        ("Gemini", "3", ("662", "ok"), ("Omitirla", "partial"), ("Día 5, 08:00 («equilibrio»)", "fail"),
+         ("Ninguna", "empty")),
+    ]
+    for model in ("Claude", "ChatGPT"):
+        for k in ("1", "2", "3"):
+            rows.append((model, k) + tuple((P, "empty") for _ in range(4)))
+    n_rows = len(rows) + 1
+    heights = [86] + [86 if any(len(c[0]) > 24 for c in r[2:]) else 48 for r in rows]
+    gf = s.shapes.add_table(n_rows, len(widths), px(tx), px(top), px(tw), px(sum(heights)))
+    _name(gf, "Tabla respuestas")
+    tbl = gf.table
+    tbl.first_row, tbl.horz_banding, tbl.vert_banding = True, False, False
+    for j, w in enumerate(widths):
+        tbl.columns[j].width = px(w)
+    for i, h in enumerate(heights):
+        tbl.rows[i].height = px(h)
+    th = T.comp("table-header")
+    for j, runs in enumerate(header):
+        c = tbl.cell(0, j)
+        c.fill.solid()
+        c.fill.fore_color.rgb = rgb(th["backgroundColor"])
+        _cell_text(c, runs, color=th["textColor"], bold=True, align="c" if j else "l")
+    styles = {k: T.comp(f"cell-{k}") for k in ("ok", "partial", "fail", "empty")}
+    for i, r in enumerate(rows, start=1):
+        model, test, *vals = r
+        for j, content in enumerate([(model, None), (test, None)] + list(vals)):
+            c = tbl.cell(i, j)
+            txt, kind = content
+            c.fill.solid()
+            if kind:
+                st = styles[kind]
+                c.fill.fore_color.rgb = rgb(st["backgroundColor"])
+                _cell_text(c, [txt.replace(" mg", f"{NB}mg").replace(" h", f"{NB}h")],
+                           color=st["textColor"], align="c" if j in (2,) else "l")
+            else:
+                c.fill.fore_color.rgb = rgb(WHITE)
+                _cell_text(c, [txt], bold=(j == 0), align="c" if j == 1 else "l")
+    # La IA solo en la primera fila de su grupo: celdas combinadas
+    for g, model in enumerate(("Gemini", "Claude", "ChatGPT")):
+        first = 1 + 3 * g
+        tbl.cell(first, 0).merge(tbl.cell(first + 2, 0))
+        _cell_text(tbl.cell(first, 0), [model], bold=True)
+    # Bordes: filetes blancos finos y separador tinta entre grupos
+    for i in range(n_rows):
+        for j in range(len(widths)):
+            c = tbl.cell(i, j)
+            _cell_border(c, ["lnL", "lnR", "lnT", "lnB"], WHITE, 1.5)
+            if i in (4, 7):
+                _cell_border(c, ["lnT"], INK, 2.5)
+    # Franja inferior, como la de «Predice como el bayesiano…»
+    cv = T.comp("caveat-strip")
+    shape(s, MARGIN, 894, CANVAS_W - 2 * MARGIN, cv["height"], fill=cv["backgroundColor"],
+          radius=R_MD, name="Franja",
+          paras=[f"Dosis recomendada: 750{NB}mg/12{NB}h en las 9 respuestas · lo que cambia es el "
+                 f"juicio que la rodea"],
+          size=T.type("body-lg")["pt"], bold=True, color=cv["textColor"], align="c", anchor="m",
+          margins=(16, 0, 16, 0))
+    source(s, "Elaboración propia · Gemini [versión], Claude [versión], ChatGPT [versión] · "
+              "octubre de 2026 · Caso simulado (CL 3 L/h, V 60 L)")
+
+
 def slide_hook(s):
     headline(s, [[("ChatGPT sabe hablar de farmacocinética, no ", {}),
                   ("hacerla", {"color": EMPH_D}), (".", {})]])
@@ -855,7 +991,7 @@ def build(template, out):
         sld_ids.remove(sld_id)
     slide_cover(prs.slides[0])
     layout = prs.slide_layouts[0]                    # fondo de contenido de la plantilla
-    for builder in (slide_hook, slide_not_ai, slide_thirty_years, slide_ladder,
+    for builder in (slide_case, slide_hook, slide_not_ai, slide_thirty_years, slide_ladder,
                     slide_pieces, slide_xray, slide_label, slide_close):
         builder(prs.slides.add_slide(layout))
     prs.save(out)

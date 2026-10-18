@@ -40,6 +40,7 @@ colors:
   error: "#D42A3B"
   error-tint: "#FCE4E6"
   caution: "#F0A500"
+  caution-tint: "#FCEFD1"
   xray-surface: "#0E1B2C"
   xray-line: "#A9DBFF"
   xray-soft: "#DDE7F0"
@@ -193,6 +194,22 @@ components:
   tag-partial:
     backgroundColor: "{colors.caution}"
     textColor: "{colors.xray-surface}"
+  table-header:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.label-md}"
+  cell-ok:
+    backgroundColor: "{colors.tool-tint}"
+    textColor: "{colors.primary}"
+  cell-partial:
+    backgroundColor: "{colors.caution-tint}"
+    textColor: "{colors.primary}"
+  cell-fail:
+    backgroundColor: "{colors.error-tint}"
+    textColor: "{colors.primary}"
+  cell-empty:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.secondary}"
   tag-neutral:
     backgroundColor: "{colors.xray-soft}"
     textColor: "{colors.xray-surface}"
@@ -266,7 +283,8 @@ La paleta se toma de la propia plantilla del congreso: el morado (`#AD3B94`) y e
 - **Turquesa: énfasis editorial (`emphasis`).** La palabra clave de un titular, una pregunta guía, los apartados de una ficha o el aviso de relevo. Como mucho un uso por pieza; nunca codifica una categoría.
 - **Lima: estructura (`structure`).** Solo ecos de la plantilla (bandas finas, peldaños, decoración del envase). No lleva texto.
 - **Rojo: fallo (`error`).** Solo para un fallo demostrado: un dato erróneo o una pieza que falla en un estudio. Nunca para advertencias genéricas.
-- **Ámbar: rendimiento parcial (`caution`).** Solo para el estado intermedio de una pieza evaluada («interpreta: 83 %»). No se usa para avisos metodológicos.
+- **Ámbar: rendimiento parcial o discutible (`caution`).** Solo para el estado intermedio de una pieza evaluada («interpreta: 83 %») o una celda discutible en una tabla de respuestas. No se usa para avisos metodológicos.
+- **Tablas de respuestas.** Fondos suaves con texto tinta: verde (`cell-ok`) correcto, ámbar (`cell-partial`, tinte del 18 % de `caution`) discutible, rojo (`cell-fail`) error y gris (`cell-empty`) sin dato o sin fuente. Cabecera en tinta con texto blanco. Mínimo 16 pt.
 
 **Radiografía.** `xray-surface` y `xray-line` quedan para otros soportes (cartel, web). En las diapositivas de contenido no se usan fondos oscuros: el estado de cada pieza se muestra con etiquetas de color sobre fondo blanco.
 
