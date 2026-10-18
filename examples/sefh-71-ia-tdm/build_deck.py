@@ -285,9 +285,17 @@ def image(slide, name, x, y, w, h, align="c", valign="m", rotation=0, label=None
 # --- Componentes (DESIGN.md › components) ----------------------------------------
 
 def headline(slide, paras, closing=False, align="l"):
-    t = T.type("headline-display" if closing else "headline-lg")
+    """Titular de contenido: una línea, negrita, alineado a la izquierda (DESIGN.md › headline).
+
+    closing=True: frase de cierre centrada (diapositiva final), en redonda y más alta.
+    """
+    if closing:
+        t = T.type("headline-display")
+        return text(slide, MARGIN, 118, CANVAS_W - 2 * MARGIN, 150, paras, size=t["pt"],
+                    color=INK, align=align, anchor="t", spacing=0.92, name="Titular")
+    t = T.type("headline-lg")
     return text(slide, MARGIN, TITLE_Y, CANVAS_W - 2 * MARGIN, TITLE_H, paras, size=t["pt"],
-                color=INK, align=align, anchor="t", spacing=0.92, name="Titular")
+                bold=t["bold"], color=INK, align="l", anchor="m", name="Titular")
 
 
 def source(slide, s, two_lines=False):
@@ -295,6 +303,19 @@ def source(slide, s, two_lines=False):
     y, h = (980, 56) if two_lines else (SOURCE_Y, SOURCE_H)
     return text(slide, MARGIN, y, CANVAS_W - 2 * MARGIN, h, s, size=t["pt"], color=GRAY,
                 anchor="b", name="Fuente")
+
+
+def subtitle(slide, s):
+    """Línea de contexto bajo el titular (gris, 20 pt)."""
+    return text(slide, MARGIN, TITLE_Y + TITLE_H, CANVAS_W - 2 * MARGIN, 40, s, size=20,
+                italic=True, color=GRAY, name="Subtítulo")
+
+
+def notes(slide, *paras):
+    """Notas del orador: guardan el texto que sale de la pantalla."""
+    slide.notes_slide.notes_text_frame.text = "\n\n".join(paras)
+
+
 
 
 def card(slide, x, y, w, h, kind="card", name="Tarjeta"):
@@ -334,27 +355,29 @@ def icon_disc(slide, icon, cx, cy, d=ICON_LG, fill=WHITE):
 
 
 # --- Esquema de las cinco piezas (diapositivas 6, 7 y 9) --------------------------
-FRAME_X, FRAME_W = cols(2, 11)
-OFF = 511                                  # distancia de las piezas laterales al centro
-PARROT_H, FICHA_H = 236, 150               # el loro es el nodo mayor (≈ 1,5×)
+FRAME_X, FRAME_W = MARGIN, CANVAS_W - 2 * MARGIN   # 6 y 7: a todo el ancho
+OFF, PARROT_H, FICHA_H, TOOL_ICON = 640, 260, 180, 72   # el loro es el nodo mayor
+LCOLS = [(960 - OFF - 240, 480), (960 - 300, 600), (960 + OFF - 240, 480)]
 
 
-def scheme(slide, variant, fy, k=1.0, arrow_color=INK):
-    """Dibujos y flechas del esquema. Devuelve la geometría para colocar rótulos."""
-    cx = [960 - OFF * k, 960, 960 + OFF * k]
-    ptop = fy + 24 * k
-    ph = PARROT_H * k
+def scheme(slide, variant, fy, off=OFF, ph=PARROT_H, fh=FICHA_H, icon=TOOL_ICON,
+           arrow_color=INK):
+    """Dibujos y flechas del esquema de cinco piezas. Devuelve la geometría para los rótulos."""
+    cx = [960 - off, 960, 960 + off]
+    ptop = fy + 30 * ph / PARROT_H
     mid = ptop + ph / 2
-    image(slide, f"loro-{variant}", 960 - ph / 2, ptop, ph, ph, label="Loro robótico (modelo de lenguaje)")
-    fh = FICHA_H * k
-    image(slide, f"ficha-caso-{variant}", cx[0] - fh / 2, mid - fh / 2, fh, fh, label="Ficha del caso")
-    s_ = ICON_SM * k
-    stack = 3 * s_ + 2 * 14 * k
+    image(slide, f"loro-{variant}", 960 - ph / 2, ptop, ph, ph,
+          label="Loro robótico (modelo de lenguaje)")
+    image(slide, f"ficha-caso-{variant}", cx[0] - fh / 2, mid - fh / 2, fh, fh,
+          label="Ficha del caso")
+    gap = icon * 0.2
+    stack = 3 * icon + 2 * gap
     for i, ic in enumerate(("curva", "campana", "red")):
-        image(slide, f"icono-{ic}-{variant}", cx[2] - s_ * 0.75, mid - stack / 2 + i * (s_ + 14 * k),
-              s_ * 1.5, s_, label=f"Icono {ic}")
-    arrow(slide, cx[0] + 80 * k, mid, 960 - 78 * k, mid, color=arrow_color, name="Contexto → modelo")
-    arrow(slide, 960 + 78 * k, mid, cx[2] - 64 * k, mid, both=True, color=arrow_color,
+        image(slide, f"icono-{ic}-{variant}", cx[2] - icon * 0.75,
+              mid - stack / 2 + i * (icon + gap), icon * 1.5, icon, label=f"Icono {ic}")
+    arrow(slide, cx[0] + fh * 0.45 + 20, mid, 960 - ph * 0.3, mid, color=arrow_color,
+          name="Contexto → modelo")
+    arrow(slide, 960 + ph * 0.3, mid, cx[2] - icon * 0.95, mid, both=True, color=arrow_color,
           name="Modelo ↔ herramientas")
     return {"cx": cx, "mid": mid, "ptop": ptop, "bottom": ptop + ph}
 
@@ -427,16 +450,18 @@ def slide_cover(s):
 
 
 def slide_hook(s):
-    headline(s, [[("ChatGPT sabe hablar de farmacocinética,\npero no ", {}),
-                  ("hacer", {"bold": True, "color": EMPH_D}), (" farmacocinética.", {})]])
-
+    headline(s, [[("ChatGPT sabe hablar de farmacocinética, no ", {}),
+                  ("hacerla", {"color": EMPH_D}), (".", {})]])
+    notes(s, "Titular original: ChatGPT sabe hablar de farmacocinética, pero no hacer "
+             "farmacocinética.")
     x0, w0 = cols(1, 7)
+    top = 280                                       # pizarra y tarjeta comparten borde superior
     floor_y = 972
     line(s, x0 + 10, floor_y, x0 + w0, floor_y, color=RULE, lw=W_THIN, name="Suelo")
-    # Pizarra con fórmulas impecables (texto editable)
-    bx, by, bw, bh = 480, 300, 610, 318
+    bx, by, bw, bh = 480, top, 610, 318
     shape(s, bx, by, bw, bh, fill=CHALKBOARD, line=INK, lw=W_MD, radius=R_MD, name="Pizarra")
-    shape(s, bx + 40, by + bh, bw - 80, 12, fill=C("illus-metal-2"), line=INK, lw=W_THIN, name="Repisa")
+    shape(s, bx + 40, by + bh, bw - 80, 12, fill=C("illus-metal-2"), line=INK, lw=W_THIN,
+          name="Repisa")
     shape(s, bx + 430, by + bh - 10, 38, 10, fill=WHITE, line=INK, lw=W_THIN, name="Tiza")
     text(s, bx + 50, by + 24, bw - 90, bh - 40, [
         ["CL = k", ("e", {"sub": True}), " · V", ("d", {"sub": True})],
@@ -445,26 +470,22 @@ def slide_hook(s):
         ["k", ("e", {"sub": True}), " = ln(C", ("1", {"sub": True}), " / C", ("2", {"sub": True}),
          ") / Δt"],
     ], size=26, color=CHALK, italic=True, spacing=1.0, anchor="m", name="Fórmulas")
-    # Loro muy seguro de sí mismo
-    image(s, "loro-seguro", 90, 392, 380, floor_y - 392 + 6, valign="b",
+    image(s, "loro-seguro", 90, 380, 380, floor_y - 380 + 6, valign="b",
           label="Loro robótico con bata señalando la pizarra")
-    # Bocadillo alineado con la pizarra; cola corta hacia el pico
-    bub_x, bub_y, bub_w, bub_h = bx, 650, 560, 130
+    bub_x, bub_y, bub_w, bub_h = bx, 640, 560, 130
     bub = shape(s, bub_x, bub_y, bub_w, bub_h, fill=WHITE, line=INK, lw=W_MD,
                 kind=MSO_SHAPE.ROUNDED_RECTANGULAR_CALLOUT, name="Bocadillo",
                 paras=["aclaramiento… volumen de distribución… semivida…"],
                 size=22, italic=True, color=INK, anchor="m", margins=(28, 10, 28, 10))
-    tip = (bub_x - 34, bub_y - 26)                    # cola corta hacia el pico
+    tip = (bub_x - 34, bub_y - 26)
     bub.adjustments[0] = (tip[0] - (bub_x + bub_w / 2)) / bub_w
     bub.adjustments[1] = (tip[1] - (bub_y + bub_h / 2)) / bub_h
-    # Calculadora boca abajo, tirada en el suelo junto al loro
     image(s, "icono-calculadora", 520, floor_y - 110, 110, 110, valign="b", rotation=200,
           label="Calculadora boca abajo en el suelo")
 
-    # Tarjeta de dato: columnas 8-12, centrada en vertical
+    # Tarjeta del dato, alineada arriba con la pizarra; su fuente justo debajo
     cx, cw = cols(8, 12)
-    ch = 600
-    cy = CONTENT_Y + (CONTENT_B - CONTENT_Y - ch) / 2
+    cy, ch = top, 600
     card(s, cx, cy, cw, ch, kind="card-stat", name="Tarjeta dato")
     t = T.type("stat-display")
     text(s, cx + 48, cy + 24, cw - 96, 214, f"37{NB}%", size=t["pt"], bold=True, color=ML,
@@ -476,7 +497,8 @@ def slide_hook(s):
     text(s, cx + 48, cy + 490, cw - 96, 100,
          f"717 predicciones · 239{NB}ingresos{NB}en{NB}UCI · Grok: 29{NB}%", size=20,
          color=GRAY, name="Detalle")
-    source(s, "Ishaqui et al., Expert Rev Anti Infect Ther, 2026")
+    text(s, cx, cy + ch + 12, cw, 32, "Ishaqui et al., Expert Rev Anti Infect Ther, 2026",
+         size=T.type("caption")["pt"], color=GRAY, name="Fuente")
 
 
 def slide_not_ai(s):
@@ -486,7 +508,6 @@ def slide_not_ai(s):
           radius="full", name="Pregunta guía",
           paras=["¿Quién decide la forma del modelo: una persona o los datos?"],
           size=T.type("label-lg")["pt"], bold=True, color=gq["textColor"], align="c", anchor="m")
-
     lx, lw_ = cols(1, 6)
     rx, rw = cols(7, 12)
     head_y = 384
@@ -494,7 +515,6 @@ def slide_not_ai(s):
     text(s, lx, head_y, lw_, 46, "La decide una persona", size=lab, bold=True, color=HUMAN_D)
     text(s, rx, head_y, rw, 46, "La aprenden los datos", size=lab, bold=True, color=ML_D)
     line(s, 960, 392, 960, 965, color=RULE, lw=W_THIN, dash=MSO_LINE.DASH, name="Separador")
-
     items = [("icono-curva-color", "Modelos poblacionales y estimación bayesiana"),
              ("icono-calculadora", "Calculadoras y nomogramas"),
              ("icono-engranaje", "Automatizaciones por reglas")]
@@ -505,20 +525,19 @@ def slide_not_ai(s):
         icon_disc(s, ic, lx + PAD + ICON_LG / 2, y + chh / 2)
         text(s, lx + 2 * PAD + ICON_LG, y, lw_ - GAP - 3 * PAD - ICON_LG, chh, label,
              size=T.type("body-lg")["pt"], color=INK, anchor="m", bold=True)
-
-    # Conjuntos anidados: todo es aprendizaje automático (morado de claro a intenso)
+    # Conjuntos anidados: degradado de la plantilla, de lima (fuera) a morado (dentro)
     ccx, ccy = rx + 222, 712
-    rings = [(222, ML_S, "Aprendizaje automático"),
-             (150, ML_M, "Aprendizaje profundo\n(redes neuronales)"),
-             (80, ML, "Modelos de lenguaje\n(IA generativa)")]
-    for r, c, _ in rings:
+    rings = [(222, STRUCT, "Aprendizaje automático", C("structure-dark")),
+             (150, C("ring-mid"), "Aprendizaje profundo\n(redes neuronales)", C("ring-mid-dark")),
+             (80, ML, "Modelos de lenguaje\n(IA generativa)", ML_D)]
+    for r, c, _, _ in rings:
         shape(s, ccx - r, ccy - r, 2 * r, 2 * r, fill=c, line=WHITE, lw=W_MD, kind=MSO_SHAPE.OVAL,
               name="Círculo")
     lab_x = rx + 452
     anchors = [((ccx + 120, ccy - 140), ccy - 140),
                ((ccx + 115, ccy - 6), ccy - 6),
                ((ccx + 30, ccy + 40), ccy + 136)]
-    for (r, c, label), ((dx, dy), ly) in zip(rings, anchors):
+    for (r, c, label, dark), ((dx, dy), ly) in zip(rings, anchors):
         shape(s, dx - 9, dy - 9, 18, 18, fill=WHITE, line=INK, lw=W_THIN, kind=MSO_SHAPE.OVAL,
               name="Marca")
         if abs(ly - dy) < 1:
@@ -526,58 +545,63 @@ def slide_not_ai(s):
         else:
             line(s, dx + 6, dy + 6, lab_x - 70, ly, color=INK, lw=W_THIN)
             line(s, lab_x - 70, ly, lab_x - 12, ly, color=INK, lw=W_THIN)
-        text(s, lab_x, ly - 52, rx + rw - lab_x, 104, label, size=20, bold=True, color=ML_D,
+        text(s, lab_x, ly - 52, rx + rw - lab_x, 104, label, size=20, bold=True, color=dark,
              anchor="m")
     source(s, "Keutzer et al., Pharmaceutics, 2022")
 
 
 def slide_thirty_years(s):
-    headline(s, "Treinta años de estudios: predice parecido al bayesiano,\n"
-                "pero apenas ha llegado al día a día.")
-    ty = 312
+    headline(s, "Predice como el bayesiano, pero no ha llegado a la clínica.")
+    notes(s, "Titular original: Treinta años de estudios: predice parecido al bayesiano, pero "
+             "apenas ha llegado al día a día.",
+          "1995 · Red neuronal frente a NONMEM (gentamicina, 111 pacientes).",
+          "2025 · 58 estudios: el aprendizaje automático rinde igual o mejor que los modelos "
+          "poblacionales.",
+          "Sin concentraciones del paciente: el modelo híbrido mejora un 17 % el error del "
+          "bayesiano · vancomicina en sepsis, 4059 pacientes.",
+          "Con concentraciones del paciente: gana el bayesiano (13 % de error frente a 34 %); "
+          "gana el aprendizaje automático (ABC de tacrolimus en 6 series externas).")
+    ty = 304
     line(s, MARGIN, ty, CANVAS_W - MARGIN, ty, color=INK, lw=W_MD, tail="triangle",
          name="Línea de tiempo")
     lx, lw_ = cols(1, 6)
     rx, rw = cols(7, 12)
-    for (x, w, yr, rest) in (
-        (lx, lw_, "1995", " · Red neuronal frente a NONMEM (gentamicina, 111 pacientes)"),
-        (rx, rw, "2025", " · 58 estudios: el aprendizaje automático rinde igual o mejor "
-                         "que los modelos poblacionales"),
-    ):
+    for (x, w, yr, rest) in ((lx, lw_, "1995", " · Red neuronal frente a NONMEM"),
+                             (rx, rw, "2025", " · 58 estudios: rinde igual o mejor que los "
+                                              "modelos poblacionales")):
         shape(s, x, ty - 13, 26, 26, fill=WHITE, line=INK, lw=W_MD, kind=MSO_SHAPE.OVAL,
               name=f"Hito {yr}")
-        text(s, x, ty + 26, w - GAP, 130, [[(yr, {"bold": True, "size": 24}), (rest, {})]],
-             size=20, color=INK, name=f"Texto {yr}")
+        text(s, x, ty + 24, w - GAP, 100, [[(yr, {"bold": True, "size": 24}), (rest, {})]],
+             size=22, color=INK, name=f"Texto {yr}")
 
-    cy, chh = 470, 360
-    body = T.type("body-lg")["pt"]
+    cy, chh = 440, 420
     for x, w, ic, head, lbl in ((lx, lw_, "icono-gotero", "Sin concentraciones del paciente",
                                  "Gotero vacío"),
                                 (rx, rw, "icono-tubo", "Con concentraciones del paciente",
                                  "Tubo de análisis")):
         card(s, x, cy, w, chh, name=f"Tarjeta {head}")
-        image(s, ic, x + PAD, cy + PAD, ICON_SM, ICON_MD, label=lbl)
-        text(s, x + PAD + ICON_SM + 16, cy + PAD, w - 2 * PAD - ICON_SM - 16, ICON_MD, head,
-             size=24, bold=True, color=INK, anchor="m")
-    text(s, lx + PAD, cy + 150, lw_ - 2 * PAD, chh - 150 - PAD, [[
-        ("El modelo híbrido mejora un ", {}), (f"17{NB}%", {"bold": True, "color": ML}),
-        (f" el error del bayesiano · vancomicina en sepsis, 4059{NB}pacientes", {})]],
-        size=body, color=INK, anchor="m")
-    for i, (c, dark, runs) in enumerate((
-        (TOOL, TOOL_D, [("Gana el bayesiano: ", {"bold": True}),
-                        (f"13{NB}% de error frente{NB}a{NB}34{NB}%", {})]),
-        (ML, ML_D, [("Gana el aprendizaje automático: ", {"bold": True}),
-                    ("ABC de tacrolimus en 6 series externas", {})]),
-    )):
-        yy = cy + 140 + i * 110
-        shape(s, rx + PAD, yy + 12, 20, 20, fill=c, kind=MSO_SHAPE.OVAL, name="Marca color")
-        text(s, rx + PAD + 36, yy, rw - 2 * PAD - 36, 96, [runs], size=body, color=dark)
+        image(s, ic, x + PAD, cy + PAD, ICON_SM * 0.7, ICON_SM, label=lbl)
+        text(s, x + PAD + ICON_SM, cy + PAD, w - 2 * PAD - ICON_SM, ICON_SM, head, size=24,
+             bold=True, color=INK, anchor="m")
+    # Izquierda: una cifra
+    text(s, lx + PAD, cy + 110, lw_ - 2 * PAD, 190, f"17{NB}%", size=96, bold=True, color=ML,
+         anchor="m", name="Cifra híbrido")
+    text(s, lx + PAD, cy + 300, lw_ - 2 * PAD, 100,
+         "menos error que el bayesiano\ncon el modelo híbrido", size=22, color=INK)
+    # Derecha: un empate, uno a uno
+    for i, (c, dark, who, what) in enumerate((
+            (TOOL, TOOL_D, "Gana el bayesiano", f"13{NB}% de error frente a 34{NB}%"),
+            (ML, ML_D, "Gana el aprendizaje automático", "en el ABC de tacrolimus"))):
+        yy = cy + 120 + i * 140
+        shape(s, rx + PAD, yy + 12, 24, 24, fill=c, kind=MSO_SHAPE.OVAL, name="Marca color")
+        text(s, rx + PAD + 44, yy, rw - 2 * PAD - 44, 120,
+             [[(who, {"bold": True, "color": dark})], [(what, {})]], size=24, color=INK)
 
     cv = T.comp("caveat-strip")
-    shape(s, MARGIN, 852, CANVAS_W - 2 * MARGIN, cv["height"], fill=cv["backgroundColor"],
+    shape(s, MARGIN, 878, CANVAS_W - 2 * MARGIN, cv["height"], fill=cv["backgroundColor"],
           radius=R_MD, name="Advertencia",
           paras=["Casi todo retrospectivo · La IA y los híbridos siguen en investigación"],
-          size=body, bold=True, color=cv["textColor"], align="c", anchor="m")
+          size=T.type("body-lg")["pt"], bold=True, color=cv["textColor"], align="c", anchor="m")
     source(s, "Brier et al., Pharm Res, 1995 · Methaneethorn et al., Clin Pharmacokinet, 2025 · "
               "Chen et al., Microbiol Spectr, 2025 · Woillard et al., Clin Pharmacol Ther, 2021 · "
               "Altynova et al., Pharmaceuticals, 2026", two_lines=True)
@@ -586,7 +610,7 @@ def slide_thirty_years(s):
 def slide_ladder(s):
     headline(s, "Predecir bien no es lo mismo que mejorar al paciente.")
     x_end = col(8) + COLW              # la tarjeta ocupa las columnas 9-12
-    base, rise, run, x0 = 965, 128, 150, MARGIN
+    base, rise, run, x0 = 965, 120, 150, MARGIN
     steps = [("Estudio retrospectivo", None),
              ("Validación externa", "10 de 115 estudios de tacrolimus"),
              ("Estudio prospectivo", "pocos, pequeños, sin comparador (CURATE.AI: 10 pacientes)"),
@@ -624,10 +648,14 @@ def slide_ladder(s):
             r = rnd.uniform(5, 8.5) if n > 1 else 14
             shape(s, cxp + dx - r, tread(i) + dy - r, 2 * r, 2 * r, fill=ML, line=WHITE,
                   lw=0.75 if n > 1 else W_THIN, kind=MSO_SHAPE.OVAL, name="Estudio")
-    text(s, x0, 470, 290, 100, "Aprendizaje automático", size=22, bold=True, color=ML,
-         anchor="b", name="Rótulo marcador")
-    line(s, x0 + 50, 576, x0 + 50, 730, color=ML, lw=W_THIN, dash=MSO_LINE.ROUND_DOT,
-         name="Guía marcador")
+    # Leyenda: qué significa cada marcador
+    for i, (c, r, lab) in enumerate(((ML, 9, "Estudios de aprendizaje automático"),
+                                     (TOOL, 14, "Dosificación individualizada (TDM)"))):
+        ly = 252 + i * 46
+        shape(s, x0 + 14 - r, ly + 22 - r, 2 * r, 2 * r, fill=c, line=WHITE, lw=W_THIN,
+              kind=MSO_SHAPE.OVAL, name="Leyenda: marcador")
+        text(s, x0 + 40, ly, 640, 44, lab, size=20, color=INK, anchor="m",
+             name="Leyenda: texto")
 
     # Tarjeta verde unida al quinto peldaño por un marcador verde
     cx, cw = cols(9, 12)
@@ -659,39 +687,34 @@ def slide_ladder(s):
               "Sanz-Codina et al., Clin Microbiol Infect, 2023")
 
 
-# Columnas de rótulos del esquema (mismas en las diapositivas 6 y 7)
-LCOLS = [(960 - OFF - 205, 410), (960 - 300, 600), (960 + OFF - 205, 410)]
 
 
 def slide_pieces(s):
     headline(s, "El fallo no es de la IA: es de usar una sola pieza.")
-    fy, fh = 420, 460
-    # Rótulo del arnés, fuera del marco y alineado con él
-    text(s, FRAME_X, 296, 640, 100, [[("Arnés (el protocolo)", {"bold": True})],
-                                    [("procedimiento normalizado de trabajo", {"color": GRAY})]],
-         size=20, color=INK, anchor="b", name="Rótulo arnés")
+    notes(s, "En vuestro servicio:",
+          "Contexto → historia clínica. Modelo → lee, llama a la herramienta y redacta el "
+          "borrador. Herramientas → programa bayesiano. Arnés → procedimiento normalizado de "
+          "trabajo. Farmacéutico → firma del informe.")
+    fy, fh = 390, 460
+    text(s, FRAME_X, 330, 600, 50, "Arnés (el protocolo)", size=24, bold=True, color=INK,
+         anchor="b", name="Rótulo arnés")
     frame(s, FRAME_X, fy, FRAME_W, fh)
     shape(s, 960 - 220, fy + fh - 22, 440, 44, fill=WHITE, name="Borde arnés",
           paras=["reglas · límites · registro"], size=20, italic=True, color=INK, align="c",
           anchor="m")
     g = scheme(s, "color", fy)
-    right = pharmacist(s, "color", 290, 104, fy, g["ptop"])
-    text(s, right + 18, 290, 760, 104, [
-        [("Farmacéutico", {"bold": True, "color": HUMAN_D}), (" · supervisa y aporta criterio", {})],
-        [("firma del informe", {"color": GRAY})]], size=20, color=INK, anchor="m")
-    lab_y = g["bottom"] + 14
-    labels = [
-        [[("Contexto", {"bold": True}), (" · lo que le das del caso", {})],
-         [("historia clínica", {"color": GRAY})]],
-        [[("Modelo de lenguaje", {"bold": True, "color": ML_D}), (" · predice texto", {})],
-         [("lee, llama a la herramienta y redacta el borrador", {"color": GRAY})]],
-        [[("Herramientas", {"bold": True, "color": TOOL_D}),
-          (" · código y programas validados", {})],
-         [("programa bayesiano", {"color": GRAY})]],
-    ]
-    for (x, w), lab in zip(LCOLS, labels):
-        text(s, x, lab_y, w, 150, lab, size=20, color=INK, align="c")
-    text(s, MARGIN, 914, CANVAS_W - 2 * MARGIN, 60, [[
+    right = pharmacist(s, "color", 268, 104, fy, g["ptop"])
+    text(s, right + 18, 268, 760, 104, [[
+        ("Farmacéutico", {"bold": True, "color": HUMAN_D, "size": 24}),
+        (" · supervisa y aporta criterio", {})]], size=20, color=INK, anchor="m")
+    lab_y = g["bottom"] + 12
+    labels = [("Contexto", INK, "lo que le das del caso"),
+              ("Modelo de lenguaje", ML_D, "predice texto"),
+              ("Herramientas", TOOL_D, "código y programas validados")]
+    for (x, w), (name, color, desc) in zip(LCOLS, labels):
+        text(s, x, lab_y, w, 110, [[(name, {"bold": True, "color": color, "size": 24})],
+                                   [(desc, {})]], size=20, color=INK, align="c")
+    text(s, MARGIN, 898, CANVAS_W - 2 * MARGIN, 60, [[
         ("El modelo de lenguaje no da siempre la misma respuesta; ", {}),
         ("la herramienta validada, sí.", {"bold": True, "color": TOOL_D})]],
         size=24, color=INK, align="c", anchor="m", name="Frase de pie")
@@ -699,65 +722,57 @@ def slide_pieces(s):
 
 
 def slide_xray(s):
-    headline(s, "La lección de TDM-AID: cada tarea, a la pieza que mejor la hace.")
-    xp = T.comp("xray-panel")
-    shape(s, MARGIN, 282, CANVAS_W - 2 * MARGIN, 700, fill=xp["backgroundColor"], radius=R_MD,
-          name="Fondo radiografía")
-    fy, fh = 420, 480
-    text(s, 112, 300, 760, 92, [[(
-        "Prepublicación · 30 casos retrospectivos ·\nfunción renal estable", {})]],
-        size=20, italic=True, color=XSOFT, anchor="m", name="Franja")
-    frame(s, FRAME_X, fy, FRAME_W, fh, color=ERROR)
-    text(s, FRAME_X + 20, fy + 14, 160, 44, "Arnés", size=20, bold=True, color=WHITE,
+    """Diapositiva 7: el mismo esquema, con el estado de cada pieza en TDM-AID."""
+    headline(s, "TDM-AID: cada tarea, a la pieza que mejor la hace.")
+    subtitle(s, "Prepublicación · 30 casos retrospectivos · función renal estable")
+    notes(s, "Titular original: La lección de TDM-AID: cada tarea, a la pieza que mejor la hace.",
+          "Herramienta: motor de ecuaciones de primer orden.",
+          "Lectura: los cálculos que falló el modelo son trabajo de la herramienta; la dosis "
+          "máxima es trabajo del arnés.")
+    fy, fh = 390, 536
+    text(s, FRAME_X, 330, 600, 50, "Arnés", size=24, bold=True, color=ERROR, anchor="b",
          name="Rótulo arnés")
-    g = scheme(s, "xray", fy, arrow_color=XLINE)
-    right = pharmacist(s, "xray", 290, 104, fy, g["ptop"])
-    text(s, right + 18, 292, 300, 44, "Farmacéutico", size=20, bold=True, color=WHITE)
-    tag(s, right + 18, 342, "borrador + revisión obligatoria", "tag-neutral",
+    frame(s, FRAME_X, fy, FRAME_W, fh, color=ERROR)
+    g = scheme(s, "color", fy)
+    right = pharmacist(s, "color", 268, 104, fy, g["ptop"])
+    text(s, right + 18, 268, 300, 44, "Farmacéutico", size=24, bold=True, color=HUMAN_D)
+    tag(s, right + 18, 320, "borrador + revisión obligatoria", "tag-neutral",
         name="Estado farmacéutico")
-
-    ny = g["bottom"] + 14
+    ny = g["bottom"] + 12
     cx = g["cx"]
-    # Contexto
-    text(s, LCOLS[0][0], ny, LCOLS[0][1], 44, "Contexto", size=20, bold=True, color=WHITE, align="c")
-    tag(s, cx[0], ny + 50, "guías locales\nrecuperadas", "tag-neutral", w=300, lines=2,
+    names = (("Contexto", INK), ("Modelo (GPT-4o)", ML_D), ("Herramienta", TOOL_D))
+    for (x, w), (n, c) in zip(LCOLS, names):
+        text(s, x, ny, w, 56, n, size=24, bold=True, color=c, align="c")
+    tag(s, cx[0], ny + 62, "guías locales\nrecuperadas", "tag-neutral", w=300, lines=2,
         center=True, name="Estado contexto")
-    # Modelo
-    text(s, LCOLS[1][0], ny, LCOLS[1][1], 44, "Modelo (GPT-4o)", size=20, bold=True, color=WHITE,
-         align="c")
-    tag(s, 960, ny + 50, f"interpreta: 83{NB}%", "tag-partial", center=True, name="Estado modelo")
-    f1 = tag(s, 960, ny + 100, f"predice concentraciones: 58{NB}%", "tag-fail", center=True,
+    tag(s, 960, ny + 62, f"interpreta: 83{NB}%", "tag-partial", center=True, name="Estado modelo")
+    f1 = tag(s, 960, ny + 114, f"predice concentraciones: 58{NB}%", "tag-fail", center=True,
              name="Fallo 1")
-    tag(s, 960, ny + 150, "cuándo extraer: 0 de 30", "tag-fail", center=True, name="Fallo 2")
-    # Herramienta
-    tx = LCOLS[2][0] + 24
-    text(s, tx, ny, LCOLS[2][1] - 24, 140, [
-        [("Herramienta", {"bold": True, "color": WHITE})],
-        [("(motor de ecuaciones de primer orden)", {"color": XSOFT})]], size=20, align="c")
-    tag(s, cx[2] + 12, ny + 150, "cálculos sin errores", "tag-ok", center=True,
+    tag(s, 960, ny + 166, "cuándo extraer: 0 de 30", "tag-fail", center=True, name="Fallo 2")
+    tag(s, cx[2], ny + 62, "cálculos sin errores", "tag-ok", center=True,
         name="Estado herramienta")
-
     # «esto es cálculo»: de los fallos del modelo a la herramienta
     fx_r = f1[0] + f1[2]
-    p0 = (fx_r + 6, ny + 100 + 23)
-    p1 = (cx[2] - 70, g["mid"] + 60)
-    curve(s, p0, (fx_r + 24, ny + 40), (fx_r + 10, p1[1] + 10), p1, color=WHITE)
-    text(s, 960 + 66, g["mid"] + 28, 270, 44, "esto es cálculo", size=20, italic=True,
-         color=WHITE, name="Rótulo cálculo")
+    p0 = (fx_r + 8, ny + 114 + 23)
+    p1 = (cx[2] - TOOL_ICON, g["mid"] + 40)
+    curve(s, p0, (fx_r + 90, p0[1]), (p1[0] - 120, p1[1] + 20), p1, color=INK)
+    text(s, 960 + 150, g["mid"] + 70, 260, 44, "esto es cálculo", size=22, italic=True,
+         color=INK, name="Rótulo cálculo")
     # «esto es un límite»: de «> 4 g/día» al arnés
-    lx, ly, lw_, lh = tag(s, FRAME_X, fy + fh + 18, f"sin tope de dosis · 1 de cada 6 casos "
+    lx, ly, lw_, lh = tag(s, FRAME_X, fy + fh + 12, f"sin tope de dosis · 1 de cada 6 casos "
                           f">{NB}4{NB}g/día", "tag-fail", name="Estado arnés")
-    end = (lx + lw_ + 70, fy + fh)
-    curve(s, (lx + lw_ + 6, ly + lh / 2), (lx + lw_ + 40, ly + lh / 2), (end[0], ly + 6),
-          (end[0], end[1] + 4), color=WHITE)
-    text(s, end[0] + 20, ly, 300, lh, "esto es un límite", size=20, italic=True, color=WHITE,
+    end = (lx + lw_ + 60, fy + fh)
+    curve(s, (lx + lw_ + 6, ly + lh / 2), (lx + lw_ + 40, ly + lh / 2), (end[0], ly + 4),
+          (end[0], end[1] + 4), color=INK)
+    text(s, end[0] + 20, ly, 300, lh, "esto es un límite", size=22, italic=True, color=INK,
          anchor="m", name="Rótulo límite")
     source(s, "Hassan et al., medRxiv, 2026 (prepublicación)")
 
 
 def slide_label(s):
-    headline(s, "Leemos la ficha técnica de lo que dispensamos;\n"
-                "leamos también la de la IA que usamos.")
+    headline(s, "Leamos la ficha técnica de la IA como la de un fármaco.")
+    notes(s, "Titular original: Leemos la ficha técnica de lo que dispensamos; leamos también "
+             "la de la IA que usamos.")
     lx, lw_ = cols(6, 12)
     top, bottom = 298, 968
     # Envase genérico vertical (proyección oblicua), alineado con la ficha
@@ -814,14 +829,13 @@ def slide_close(s):
                   (" explica\ny el ", {}), ("farmacéutico", {"bold": True, "color": HUMAN_D}),
                   (" decide.", {})]], closing=True, align="c")
     fx, fw = cols(3, 10)
-    k = fw / FRAME_W
+    k = 0.7975                                   # esquema reducido (aprobado por el autor)
     fy = 470
-    g_top = fy + 24 * k
-    pharmacist(s, "color", 300, 140, fy, g_top)
-    fh = (24 + PARROT_H + 24) * k + 24
-    shape(s, fx, fy, fw, fh, line=MUTED, lw=W_MD, dash=MSO_LINE.DASH, radius=R_MD,
-          name="Arnés (gris)")
-    scheme(s, "gray", fy, k=k, arrow_color=MUTED)
+    ph = 236 * k
+    pharmacist(s, "color", 300, 140, fy, fy + 30 * ph / PARROT_H)
+    shape(s, fx, fy, fw, (24 + 236 + 24) * k + 24, line=MUTED, lw=W_MD, dash=MSO_LINE.DASH,
+          radius=R_MD, name="Arnés (gris)")
+    scheme(s, "gray", fy, off=511 * k, ph=ph, fh=150 * k, icon=ICON_SM * k, arrow_color=MUTED)
     shape(s, MARGIN, 868, CANVAS_W - 2 * MARGIN, 100, fill=SURFACE, radius=R_MD, name="Relevo",
           paras=[[("A continuación: ", {"bold": True, "color": EMPH_D}),
                   ("Emilio Monte Boquet", {"bold": True}),

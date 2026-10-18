@@ -24,4 +24,4 @@ Las medidas están en píxeles de un lienzo de 1920 × 1080. En una diapositiva 
 npx @google/design.md lint DESIGN.md
 ```
 
-Estado actual: 0 errores. Quedan 17 avisos `orphaned-tokens` aceptados: la paleta `illus-*`, que consume el generador de ilustraciones y no un componente, y los colores de marca de los que derivan los semánticos.
+Estado actual: 0 errores. Quedan 18 avisos `orphaned-tokens` aceptados: la paleta `illus-*`, que consume el generador de ilustraciones y no un componente, y los colores de marca de los que derivan los semánticos.
