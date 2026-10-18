@@ -1,6 +1,6 @@
 # Ponencia «Qué puede aportar realmente la IA a la TDM y a la farmacocinética clínica»
 
-Curso precongreso del 71 Congreso Nacional SEFH. Nueve diapositivas fijas (sin animaciones ni transiciones) maquetadas sobre la plantilla oficial `71-congreso-plantilla-ponencias.pptx`.
+Curso precongreso del 71 Congreso Nacional SEFH. Diez diapositivas fijas (sin animaciones ni transiciones) maquetadas sobre la plantilla oficial `71-congreso-plantilla-ponencias.pptx`.
 
 | Archivo | Qué es |
 |---|---|
@@ -9,6 +9,7 @@ Curso precongreso del 71 Congreso Nacional SEFH. Nueve diapositivas fijas (sin a
 | `assets/*.png` | Ilustraciones sueltas (loro, iconos, farmacéutico, ficha del caso) en variantes color, gris y radiografía |
 | `build_assets.py` | Genera las ilustraciones (SVG → PNG) |
 | `build_deck.py` | Monta la presentación sobre la plantilla |
+| `insertar_diapositiva.py` | Inserta o sustituye (`--sustituir`) una diapositiva en la presentación ya montada sin regenerar las demás |
 
 Reconstruir (la plantilla SEFH no se incluye en el repositorio):
 
