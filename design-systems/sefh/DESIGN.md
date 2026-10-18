@@ -285,6 +285,7 @@ La paleta se toma de la propia plantilla del congreso: el morado (`#AD3B94`) y e
 - **Rojo: fallo (`error`).** Solo para un fallo demostrado: un dato erróneo o una pieza que falla en un estudio. Nunca para advertencias genéricas.
 - **Ámbar: rendimiento parcial o discutible (`caution`).** Solo para el estado intermedio de una pieza evaluada («interpreta: 83 %») o una celda discutible en una tabla de respuestas. No se usa para avisos metodológicos.
 - **Tablas de respuestas.** Fondos suaves con texto tinta: verde (`cell-ok`) correcto, ámbar (`cell-partial`, tinte del 18 % de `caution`) discutible, rojo (`cell-fail`) error y gris (`cell-empty`) sin dato o sin fuente. Cabecera en tinta con texto blanco. Mínimo 16 pt.
+- **Indicadores de recuento.** Cifra grande (≥ 72 pt) en la variante `-dark` de su color, texto a la derecha (≥ 22 pt) y una barra de segmentos, uno por observación: relleno de color = acierto; vacío (`neutral` con filete `outline`) = fallo. Verde para lo que sale bien; rojo solo para el indicador que señala un fallo demostrado.
 
 **Radiografía.** `xray-surface` y `xray-line` quedan para otros soportes (cartel, web). En las diapositivas de contenido no se usan fondos oscuros: el estado de cada pieza se muestra con etiquetas de color sobre fondo blanco.
 
