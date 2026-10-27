@@ -40,10 +40,13 @@ colors:
   error: "#D42A3B"
   error-tint: "#FCE4E6"
   caution: "#F0A500"
+  caution-tint: "#FCEFD1"
   xray-surface: "#0E1B2C"
   xray-line: "#A9DBFF"
   xray-soft: "#DDE7F0"
   muted: "#C3CBD3"
+  ring-mid: "#3A8AA6"
+  ring-mid-dark: "#2B6C85"
   illus-ink: "{colors.primary}"
   illus-metal-1: "#E4E9EE"
   illus-metal-2: "#B9C3CD"
@@ -63,8 +66,8 @@ typography:
     lineHeight: 1.0
   headline-lg:
     fontFamily: Calibri
-    fontSize: 64px
-    fontWeight: 400
+    fontSize: 72px
+    fontWeight: 700
     lineHeight: 1.0
   title-cover:
     fontFamily: Calibri
@@ -113,7 +116,7 @@ spacing:
   gutter: 24px
   margin: 80px
   title-top: 118px
-  title-height: 150px
+  title-height: 100px
   content-top: 290px
   content-bottom: 985px
   source-top: 998px
@@ -134,7 +137,10 @@ components:
   headline:
     textColor: "{colors.primary}"
     typography: "{typography.headline-lg}"
-    height: 150px
+    height: 100px
+  subtitle:
+    textColor: "{colors.secondary}"
+    typography: "{typography.body-md}"
   headline-closing:
     textColor: "{colors.primary}"
     typography: "{typography.headline-display}"
@@ -188,6 +194,22 @@ components:
   tag-partial:
     backgroundColor: "{colors.caution}"
     textColor: "{colors.xray-surface}"
+  table-header:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.label-md}"
+  cell-ok:
+    backgroundColor: "{colors.tool-tint}"
+    textColor: "{colors.primary}"
+  cell-partial:
+    backgroundColor: "{colors.caution-tint}"
+    textColor: "{colors.primary}"
+  cell-fail:
+    backgroundColor: "{colors.error-tint}"
+    textColor: "{colors.primary}"
+  cell-empty:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.secondary}"
   tag-neutral:
     backgroundColor: "{colors.xray-soft}"
     textColor: "{colors.xray-surface}"
@@ -207,12 +229,16 @@ components:
   label-emphasis:
     textColor: "{colors.emphasis-dark}"
     typography: "{typography.label-md}"
-  ring-ml-outer:
-    backgroundColor: "{colors.ml-soft}"
-  ring-ml-middle:
-    backgroundColor: "{colors.ml-mid}"
-  ring-ml-inner:
+  ring-outer:
+    backgroundColor: "{colors.structure}"
+  ring-middle:
+    backgroundColor: "{colors.ring-mid}"
+  ring-inner:
     backgroundColor: "{colors.ml}"
+  ring-label-outer:
+    textColor: "{colors.structure-dark}"
+  ring-label-middle:
+    textColor: "{colors.ring-mid-dark}"
   marker-ml:
     backgroundColor: "{colors.ml}"
     size: 16px
@@ -250,15 +276,18 @@ La paleta se toma de la propia plantilla del congreso: el morado (`#AD3B94`) y e
 
 **Código semántico.** Es fijo: no cambia entre piezas.
 
-- **Morado: aprendizaje automático (`ml`).** Todo modelo cuya forma aprenden los datos: aprendizaje automático, redes neuronales, modelos de lenguaje e híbridos. Las variantes `ml-soft` y `ml-mid` sirven para anidar conjuntos (anillos concéntricos), siempre de claro (fuera) a intenso (dentro).
+- **Morado: aprendizaje automático (`ml`).** Todo modelo cuya forma aprenden los datos: aprendizaje automático, redes neuronales, modelos de lenguaje e híbridos.
+- **Conjuntos anidados.** Los anillos concéntricos siguen el degradado de la plantilla: lima (`structure`, fuera), azul verdoso (`ring-mid`) y morado (`ml`, dentro). Es una decisión del autor: prefiere esta escala de la plantilla a una escala monocroma morada.
 - **Verde: herramienta validada y TDM (`tool`).** Modelos poblacionales, estimación bayesiana, programas validados y resultados de la dosificación individualizada.
 - **Azul: la persona (`human`).** El farmacéutico, el criterio humano y «la decide una persona».
 - **Turquesa: énfasis editorial (`emphasis`).** La palabra clave de un titular, una pregunta guía, los apartados de una ficha o el aviso de relevo. Como mucho un uso por pieza; nunca codifica una categoría.
 - **Lima: estructura (`structure`).** Solo ecos de la plantilla (bandas finas, peldaños, decoración del envase). No lleva texto.
 - **Rojo: fallo (`error`).** Solo para un fallo demostrado: un dato erróneo o una pieza que falla en un estudio. Nunca para advertencias genéricas.
-- **Ámbar: rendimiento parcial (`caution`).** Solo para el estado intermedio de una pieza evaluada («interpreta: 83 %»). No se usa para avisos metodológicos.
+- **Ámbar: rendimiento parcial o discutible (`caution`).** Solo para el estado intermedio de una pieza evaluada («interpreta: 83 %») o una celda discutible en una tabla de respuestas. No se usa para avisos metodológicos.
+- **Tablas de respuestas.** Fondos suaves con texto tinta: verde (`cell-ok`) correcto, ámbar (`cell-partial`, tinte del 18 % de `caution`) discutible, rojo (`cell-fail`) error y gris (`cell-empty`) sin dato o sin fuente. Cabecera en tinta con texto blanco. Mínimo 16 pt.
+- **Indicadores de recuento.** Cifra grande (≥ 72 pt) en la variante `-dark` de su color, texto a la derecha (≥ 22 pt) y una barra de segmentos, uno por observación: relleno de color = acierto; vacío (`neutral` con filete `outline`) = fallo. Verde para lo que sale bien; rojo solo para el indicador que señala un fallo demostrado.
 
-**Radiografía.** `xray-surface` y `xray-line` sirven para la vista de «rayos X» de un esquema: fondo azul noche y líneas claras azuladas con un leve resplandor.
+**Radiografía.** `xray-surface` y `xray-line` quedan para otros soportes (cartel, web). En las diapositivas de contenido no se usan fondos oscuros: el estado de cada pieza se muestra con etiquetas de color sobre fondo blanco.
 
 **Contraste.** El texto normal necesita al menos 4,5:1 y el grande (≥ 24 pt, o ≥ 18,7 pt en negrita) al menos 3:1. El turquesa puro y el verde puro no pasan sobre blanco: para texto se usan sus variantes `-dark`. La única excepción tolerada es el título de la portada, que conserva el turquesa de la plantilla (2,6:1).
 
@@ -269,7 +298,7 @@ Una sola familia, **Calibri**, que es la del tema de la plantilla y viene en Win
 | Nivel | px (lienzo) | pt (diapositiva) | Uso |
 |---|---|---|---|
 | `headline-display` | 72 | 36 | Titular de cierre y título de portada |
-| `headline-lg` | 64 | 32 | Titular de cada diapositiva, en redonda, con la palabra clave en negrita de color |
+| `headline-lg` | 72 | 36 | Titular de cada diapositiva: negrita, a la izquierda, en una sola línea, con la palabra clave en color |
 | `stat-display` | 220 | 110 | Cifra destacada (de 96 a 120 pt) |
 | `label-lg` | 48 | 24 | Encabezados de columna y pregunta guía |
 | `body-lg` | 44 | 22 | Texto principal de tarjetas |
@@ -279,7 +308,8 @@ Una sola familia, **Calibri**, que es la del tema de la plantilla y viene en Win
 
 **Composición del texto.**
 
-- Los titulares tienen como máximo dos líneas, cortadas a mano en una pausa natural: tras una coma, un punto y coma o un «pero».
+- **El titular ocupa una sola línea** (unos 48 caracteres a 36 pt en negrita). Si no cabe, se acorta con el autor y el titular original va a las notas del orador. La frase de cierre de la última diapositiva es la única excepción: va centrada, en redonda y puede ocupar dos líneas.
+- **Texto justo.** En pantalla quedan la idea y la cifra clave. El detalle (tamaños de muestra, series, equivalencias en el servicio) se conserva palabra por palabra en las notas del orador.
 - Entre cifra y unidad va un espacio de no separación (`37 %`, `4 g/día`, `RR 0,55`). También se protegen los nombres propios compuestos (`Nuestra Señora de Candelaria`).
 - Nunca queda una palabra sola en la última línea de un titular o de una tarjeta.
 - Texto alineado a la izquierda. Solo se centran el titular de cierre, la portada y los rótulos que van bajo un dibujo.
@@ -293,7 +323,8 @@ Franjas verticales:
 | Franja | Desde | Hasta | Contenido |
 |---|---|---|---|
 | Banda de la plantilla | 0 | 112 | Logotipos (no se toca) |
-| Titular | 118 | 268 | Anclado arriba: un titular de una línea y otro de dos empiezan a la misma altura |
+| Titular | 118 | 218 | Una línea, centrada en vertical en la franja; mismo tamaño y posición en todas las diapositivas |
+| Subtítulo (opcional) | 218 | 258 | Contexto metodológico en gris |
 | Contenido | 290 | 985 | Todo lo demás |
 | Fuente | 998 | 1036 | Pie de 12 pt, a la izquierda; si no cabe en una línea, se permiten dos desde y = 980 |
 | Triángulos de la plantilla | 1042 | 1080 | No se toca |
@@ -319,7 +350,8 @@ Los iconos son de línea con la misma tinta y, como mucho, un relleno de tinte s
 
 ## Components
 
-- **Titular (`headline`).** Va a x = 80 y y = 118, anclado arriba, en 64 px redonda tinta. La palabra que lleva la tesis se marca en negrita y con el color semántico que le corresponda, o con el énfasis turquesa si no tiene categoría.
+- **Titular (`headline`).** Va a x = 80 entre y = 118 y 218, en 72 px (36 pt) negrita tinta y en una sola línea. La palabra que lleva la tesis va en el color semántico que le corresponda, o en el énfasis turquesa si no tiene categoría.
+- **Subtítulo (`subtitle`).** Una línea gris bajo el titular para el contexto metodológico (por ejemplo, «Prepublicación · 30 casos retrospectivos»).
 - **Pie de fuente (`source-note`).** 24 px en gris, alineado a la izquierda en x = 80, con el borde inferior en y = 1036. Las referencias se separan con « · ».
 - **Tarjeta (`card`).** Tinte `surface`, radio de 16 px, relleno de 32 px y sin borde. Es la unidad básica para agrupar contenido.
 - **Tarjeta de dato (`card-stat`).** Tinte del color semántico del dato, cifra en `stat-display` y lectura en `body-lg` debajo.
@@ -329,12 +361,13 @@ Los iconos son de línea con la misma tinta y, como mucho, un relleno de tinte s
 - **Etiqueta (`tag`, `tag-ok`, `tag-fail`, `tag-partial`, `tag-neutral`).** Píldora de 46 px de alto (92 px si ocupa dos líneas), con un ancho que es el del texto más 60 px y sin ajuste automático.
 - **Flecha (`arrow`).** Línea recta o curva de 5 px en tinta, con punta triangular. Las flechas de supervisión son punteadas y en azul. Una flecha mide al menos 40 px y su rótulo va pegado a ella.
 - **Marco de esquema (`scheme-frame`).** Discontinuo, de 5 px y radio de 16 px. Representa el arnés.
-- **Panel de radiografía (`xray-panel`).** Ocupa el área de contenido con radio de 16 px. Repite el esquema en líneas `xray-line` y las etiquetas de estado según el código semántico.
+- **Panel de radiografía (`xray-panel`).** Solo para soportes fuera de las diapositivas. En una presentación, el diagnóstico de un esquema se hace sobre fondo blanco con etiquetas de estado.
 
 ## Do's and Don'ts
 
 - Usa el morado para todo modelo aprendido de los datos, incluidos los modelos de lenguaje y los híbridos.
-- Ancla el titular arriba y corta a mano las líneas de titulares y tarjetas.
+- Escribe el titular en una línea, a 36 pt en negrita y alineado a la izquierda; lleva el detalle a las notas del orador.
+- Pon la fuente de un dato junto al dato cuando la diapositiva tiene una sola referencia ligada a una tarjeta.
 - Une con un espacio de no separación cada cifra con su unidad y cada abreviatura con su número.
 - Mantén el texto a 20 pt o más (12 pt solo en el pie de fuente).
 - Haz que el loro sea el nodo más grande del esquema y conserva la escala del esquema en todas las piezas.
